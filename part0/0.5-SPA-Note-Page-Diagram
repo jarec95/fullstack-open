@@ -1,0 +1,23 @@
+```mermaid
+    sequenceDiagram
+        Participant Browser
+        Participant Server
+
+        Browser->>Server: GET https://studies.cs.helsinki.fi/exampleapp/spa
+        activate Server
+        Server-->>Browser: HTML Doc 
+        deactivate Server
+
+        Browser->>Server: GET https://studies.cs.helsinki.fi/exampleapp/spa/main.js
+        activate Server
+        Server-->>Browser: JS File
+        deactivate Server
+
+        Note left of Browser: Uses AJAX to fetch JSON from Server for Notes data
+        Note right of Browser: Renders Noted from JSON Response from Server
+
+        
+
+        
+
+```
