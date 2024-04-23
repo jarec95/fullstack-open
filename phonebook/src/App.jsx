@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 
-import PhonebookService from './services/phonebookService';
+import PhonebookService from "./services/phonebookService";
 
 import ContactForm from "./Components/ContactForm/ContactForm";
 import Filter from "./Components/Filter/Filter";
 import ContactList from "./Components/ContactList/ContactList";
+import phonebookService from "./services/phonebookService";
 
 const App = () => {
-
 	const [persons, setPersons] = useState([]);
 	const [newName, setNewName] = useState("");
 	const [newNumber, setNewNumber] = useState("");
@@ -15,24 +15,47 @@ const App = () => {
 	const [filterContacts, setFilterContacts] = useState(false);
 
 	useEffect(() => {
-        PhonebookService.getPersons().then(resp => {
-            setPersons(resp);
-        });
+		PhonebookService.getPersons().then((resp) => {
+			setPersons(resp);
+		});
 	}, []);
 
-    // add new persons to the db
+	// add new persons to the db
 	function handleSubmit(e) {
 		e.preventDefault();
 
 		let newPerson = {};
 
 		if (newName.length > 0) {
-			if (isInPhonebookAlready(newName)) {
+			if (isInPhonebookAlready(newName) && newNumber.length > 0) {
+				const id = persons.find((person) => person.name === newName)?.id;
+				if (
+					id &&
+					window.confirm(
+						`${newName} already exists, would you like to update their number?`
+					)
+				)
+					phonebookService
+						.updatePerson({ id, newNumber })
+						.then((updatedPerson) => {
+							let updatedPersons = persons.map((person) => {
+								if (person.id === updatedPerson.id) {
+									person = updatedPerson;
+								}
+
+								return person;
+							});
+
+							setPersons(updatedPersons);
+						});
+			} else if (isInPhonebookAlready(newName)) {
 				alert("That person already exists");
 			} else {
 				newPerson.name = newName;
 				newPerson.number = newNumber;
-				setPersons([...persons, newPerson]);
+				phonebookService.addPerson(newPerson).then((newPerson) => {
+					setPersons([...persons, newPerson]);
+				});
 			}
 		}
 	}
@@ -61,6 +84,14 @@ const App = () => {
 		}
 	}
 
+	function handleDelete(personId) {
+		if (window.confirm("Are you sure you want to remote this person?"))
+			phonebookService.deletePerson(personId).then((resp) => {
+				const newPersons = persons.filter((person) => person.id !== personId);
+				setPersons(newPersons);
+			});
+	}
+
 	function isInPhonebookAlready(name) {
 		return persons.find((person) => person.name === name);
 	}
@@ -80,6 +111,7 @@ const App = () => {
 				persons={persons}
 				nameToFilterBy={nameToFilterBy}
 				filterContacts={filterContacts}
+				handleDelete={handleDelete}
 			/>
 		</div>
 	);

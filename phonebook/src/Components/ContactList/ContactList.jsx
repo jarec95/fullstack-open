@@ -2,6 +2,7 @@ export default function ContactList({
 	persons,
 	filterContacts,
 	nameToFilterBy,
+	handleDelete,
 }) {
 	return (
 		<>
@@ -12,14 +13,24 @@ export default function ContactList({
 						if (person.name.includes(nameToFilterBy)) {
 							return (
 								<li key={person.name}>
-									{person.name}: {person.number}
+									{person.name}: {person.number}{" "}
+									<span>
+										<button onClick={() => handleDelete(person.id)}>
+											Delete
+										</button>
+									</span>
 								</li>
 							);
 						}
 					} else {
 						return (
 							<li key={person.name}>
-								{person.name}: {person.number}
+								{person.name}: {person.number}{" "}
+								<span>
+									<button onClick={() => handleDelete(person.id)}>
+										Delete
+									</button>
+								</span>
 							</li>
 						);
 					}
