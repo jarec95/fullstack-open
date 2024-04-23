@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 
-import ContactForm from "./ContactForm/ContactForm";
-import Filter from "./Filter/Filter";
-import ContactList from "./ContactList/ContactList";
+import PhonebookService from './services/phonebookService';
+
+import ContactForm from "./Components/ContactForm/ContactForm";
+import Filter from "./Components/Filter/Filter";
+import ContactList from "./Components/ContactList/ContactList";
 
 const App = () => {
-	const url = "http://localhost:3001/persons";
 
 	const [persons, setPersons] = useState([]);
 	const [newName, setNewName] = useState("");
@@ -14,13 +15,12 @@ const App = () => {
 	const [filterContacts, setFilterContacts] = useState(false);
 
 	useEffect(() => {
-		fetch(url)
-			.then((response) => {
-				return response.json();
-			})
-			.then((personJson) => setPersons(personJson));
+        PhonebookService.getPersons().then(resp => {
+            setPersons(resp);
+        });
 	}, []);
 
+    // add new persons to the db
 	function handleSubmit(e) {
 		e.preventDefault();
 

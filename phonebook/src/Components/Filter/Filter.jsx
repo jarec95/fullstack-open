@@ -1,4 +1,4 @@
-import Input from "../Components/Input";
+import Input from "../Input";
 
 export default function Filter({ handleFilter, nameToFilterBy }) {
 	return (
