@@ -40,7 +40,8 @@ class PhonebookService {
 
 		return fetch(deleteUrl, reqObj)
 			.then((delResp) => delResp.json())
-			.then((jsonResp) => jsonResp);
+			.then((jsonResp) => jsonResp)
+			.catch((err) => Promise.reject(err));
 	}
 
 	updatePerson({ id, newNumber }) {

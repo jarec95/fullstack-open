@@ -6,6 +6,7 @@ import ContactForm from "./Components/ContactForm/ContactForm";
 import Filter from "./Components/Filter/Filter";
 import ContactList from "./Components/ContactList/ContactList";
 import phonebookService from "./services/phonebookService";
+import Notification from "./Components/shared/Notification";
 
 const App = () => {
 	const [persons, setPersons] = useState([]);
@@ -13,6 +14,11 @@ const App = () => {
 	const [newNumber, setNewNumber] = useState("");
 	const [nameToFilterBy, setNameToFilterBy] = useState("");
 	const [filterContacts, setFilterContacts] = useState(false);
+	const [notificationConfig, setNotificationConfig] = useState({
+		display: false,
+		type: "",
+		msg: "",
+	});
 
 	useEffect(() => {
 		PhonebookService.getPersons().then((resp) => {
@@ -47,14 +53,25 @@ const App = () => {
 							});
 
 							setPersons(updatedPersons);
+							handleShowNotification({
+								type: "success",
+								msg: `${updatedPerson.name} was successfully updated`,
+							});
 						});
 			} else if (isInPhonebookAlready(newName)) {
-				alert("That person already exists");
+				handleShowNotification({
+					type: "error",
+					msg: `${newName} already exists in the phonebook`,
+				});
 			} else {
 				newPerson.name = newName;
 				newPerson.number = newNumber;
 				phonebookService.addPerson(newPerson).then((newPerson) => {
 					setPersons([...persons, newPerson]);
+					handleShowNotification({
+						type: "success",
+						msg: `${newPerson.name} was successfully added to the phonebook`,
+					});
 				});
 			}
 		}
@@ -85,11 +102,50 @@ const App = () => {
 	}
 
 	function handleDelete(personId) {
-		if (window.confirm("Are you sure you want to remote this person?"))
-			phonebookService.deletePerson(personId).then((resp) => {
-				const newPersons = persons.filter((person) => person.id !== personId);
-				setPersons(newPersons);
-			});
+		if (window.confirm("Are you sure you want to remote this person?")) {
+			let deletedPerson = {};
+
+			phonebookService
+				.deletePerson(personId)
+				.then((resp) => {
+					const newPersons = persons.filter((person) => {
+						if (person.id === personId) {
+							deletedPerson = person;
+							return false;
+						}
+
+						return true;
+					});
+					setPersons(newPersons);
+					handleShowNotification({
+						type: "success",
+						msg: `${deletedPerson.name} was successfully removed`,
+					});
+				})
+				.catch((err) => {
+					handleShowNotification({
+						type: "error",
+						msg: `This person was already removed from the phonebook`,
+					});
+				});
+		}
+	}
+
+	function handleShowNotification({ type, msg }) {
+		let newNotificationConfig = {
+			...notificationConfig,
+			type,
+			msg,
+		};
+
+		if (!newNotificationConfig.display) {
+			newNotificationConfig.display = true;
+			setNotificationConfig(newNotificationConfig);
+
+			setTimeout(() => {
+				setNotificationConfig({ display: false, type: "", msg: "" });
+			}, 2000);
+		}
 	}
 
 	function isInPhonebookAlready(name) {
@@ -100,6 +156,12 @@ const App = () => {
 	return (
 		<div>
 			<h2>Phonebook</h2>
+			{notificationConfig.display ? (
+				<Notification
+					type={notificationConfig.type}
+					msg={notificationConfig.msg}
+				/>
+			) : null}
 			<Filter handleFilter={handleChange} nameToFilterBy={nameToFilterBy} />
 			<ContactForm
 				handleSubmit={handleSubmit}
